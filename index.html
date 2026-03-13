@@ -108,6 +108,7 @@ const LEVELS=[
 {n:"大师回廊",m:["#########","# .  .  #","# $$ $# #","#   @   #","#  ##   #","#   .   #","#########"]}
 ];
 const W=1,F=2,T=3,B=4,BT=5;
+const SAVE_VERSION='sokoban_levels_v3';
 let actx=null;
 function snd(t){
   if(!actx)try{actx=new(window.AudioContext||window.webkitAudioContext)}catch(e){return}
@@ -120,14 +121,32 @@ function snd(t){
 }
 const G={
   cv:null,c:null,lv:0,grid:[],px:0,py:0,steps:0,hist:[],won:false,
-  comp:JSON.parse(localStorage.getItem('sok_c')||'[]'),
-  best:JSON.parse(localStorage.getItem('sok_b')||'{}'),
+  comp:[],
+  best:{},
   init(){
     this.cv=document.getElementById('cv');this.c=this.cv.getContext('2d');
+    this.loadProgress();
     this.load(0);this.input();
     window.addEventListener('resize',()=>this.draw());
   },
-  save(){localStorage.setItem('sok_c',JSON.stringify(this.comp));localStorage.setItem('sok_b',JSON.stringify(this.best))},
+  loadProgress(){
+    const savedVersion=localStorage.getItem('sokoban_save_version');
+    if(savedVersion!==SAVE_VERSION){
+      localStorage.setItem('sokoban_save_version',SAVE_VERSION);
+      localStorage.removeItem('sok_c');
+      localStorage.removeItem('sok_b');
+      this.comp=[];
+      this.best={};
+      return;
+    }
+    try{this.comp=JSON.parse(localStorage.getItem('sok_c')||'[]')}catch(e){this.comp=[]}
+    try{this.best=JSON.parse(localStorage.getItem('sok_b')||'{}')}catch(e){this.best={}}
+  },
+  save(){
+    localStorage.setItem('sokoban_save_version',SAVE_VERSION);
+    localStorage.setItem('sok_c',JSON.stringify(this.comp));
+    localStorage.setItem('sok_b',JSON.stringify(this.best));
+  },
   diffLabel(i){
     if(i<3)return '入门';
     if(i<6)return '进阶';

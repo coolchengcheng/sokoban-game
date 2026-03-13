@@ -51,6 +51,7 @@ canvas{border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.3);background:#1a1a2
 <h1>🧩 推箱子</h1>
 <div class="header-info">
 <span>关卡 <strong id="levelNum">1</strong></span>
+<span>难度 <strong id="difficultyLabel">入门</strong></span>
 <span>步数 <strong id="stepCount">0</strong></span>
 </div>
 </div>
@@ -97,14 +98,14 @@ canvas{border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.3);background:#1a1a2
 const LEVELS=[
 {n:"初识",m:["#####","#@  #","# $ #","# . #","#####"]},
 {n:"并排",m:["######","#@   #","# $$ #","# .. #","######"]},
-{n:"转角",m:["######","# .  #","# $$ #","#  @ #","# .  #","######"]},
-{n:"双推",m:["#######","#  .  #","# $$@ #","#  .  #","#######"]},
-{n:"试探",m:["#######","#@    #","# $$  #","# ..  #","#######"]},
+{n:"窄道",m:["#######","#  .  #","# $$@ #","#  .  #","#######"]},
+{n:"回字形",m:[" #####  "," #   ## ","## #$ ##","#  $.  #","# .$.# #","#  #@  #","##   ###"," #####  "]},
 {n:"隔断",m:["########","#@     #","# $$   #","# # #  #","# ..   #","########"]},
-{n:"回廊",m:["########","#  .   #","# $$#  #","#  @.  #","########"]},
-{n:"交错",m:["########","#@  .  #","# $$#  #","#   .  #","########"]},
-{n:"迷宫",m:["########","#@ .   #","# $$#  #","#   .  #","#      #","########"]},
-{n:"终极",m:["#########","#@   .  #","# $$ #  #","#    .  #","#########"]}
+{n:"交叉推进",m:["########","#   .  #","# $$ # #","# #  # #","# # @  #","#   .  #","########"]},
+{n:"螺旋",m:[" ####    "," #  #### "," # $   # ","## #.# ##","#  #.#  #","#  ...  #","# $$$ # #","## @ ## #"," ##    ##","  ###### "]},
+{n:"三线压力",m:["#########","# . . . #","# $$$ @ #","#       #","#########"]},
+{n:"三点调度",m:["#########","# .  .  #","# $$ $# #","#   @   #","#   .   #","#########"]},
+{n:"大师回廊",m:["#########","# .  .  #","# $$ $# #","#   @   #","#  ##   #","#   .   #","#########"]}
 ];
 const W=1,F=2,T=3,B=4,BT=5;
 let actx=null;
@@ -127,6 +128,12 @@ const G={
     window.addEventListener('resize',()=>this.draw());
   },
   save(){localStorage.setItem('sok_c',JSON.stringify(this.comp));localStorage.setItem('sok_b',JSON.stringify(this.best))},
+  diffLabel(i){
+    if(i<3)return '入门';
+    if(i<6)return '进阶';
+    if(i<9)return '困难';
+    return '大师';
+  },
   load(i){
     if(i<0||i>=LEVELS.length)return;
     this.lv=i;this.steps=0;this.hist=[];this.won=false;
@@ -148,6 +155,7 @@ const G={
     }
     this.flood();
     document.getElementById('levelNum').textContent=i+1;
+    document.getElementById('difficultyLabel').textContent=this.diffLabel(i);
     document.getElementById('stepCount').textContent='0';
     this.draw();
   },

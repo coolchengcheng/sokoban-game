@@ -95,16 +95,16 @@ canvas{border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.3);background:#1a1a2
 </div>
 <script>
 const LEVELS=[
-{n:"初识",m:["  ###  ","  # #  ","  # #  ","###$####","#. $@. #","########"]},
-{n:"入门",m:["####  ","#. ## ","#  $ #","# $@.#","######"]},
-{n:"转角",m:[" ####  "," #  ## "," # $ # ","##$ .# ","#  .@# ","#   ## ","##### "]},
-{n:"双推",m:["######","#    #","# #$.#","# $@.#","#  ###","####  "]},
-{n:"迂回",m:[" #####","##   #","#  $ #","#.#$ #","#. @##","#  # ","#### "]},
-{n:"三连",m:["###### ","#    # ","# ##$##","# # . #","#  $. #","##$@. #"," ######"]},
-{n:"回廊",m:[" ######"," # ...#","## #$ #","#  $ ##","# $# # ","#  @ # ","###### "]},
-{n:"交错",m:["  #### ","###  ##","#   $.#","# #$#.#","#   $.#","###@ ##","  #### "]},
-{n:"迷宫",m:["########","#  ....#","# # ## #","# $$ $ #","## $ ###"," # @#  "," #  #  "," ####  "]},
-{n:"终极",m:[" ######","##....#","# $$$ #","#. $  #","## $ ##"," # @ # "," # # # "," #   # "," ##### "]}
+{n:"初识",m:["#####","#@  #","# $ #","# . #","#####"]},
+{n:"并排",m:["######","#@   #","# $$ #","# .. #","######"]},
+{n:"转角",m:["######","# .  #","# $$ #","#  @ #","# .  #","######"]},
+{n:"双推",m:["#######","#  .  #","# $$@ #","#  .  #","#######"]},
+{n:"试探",m:["#######","#@    #","# $$  #","# ..  #","#######"]},
+{n:"隔断",m:["########","#@     #","# $$   #","# # #  #","# ..   #","########"]},
+{n:"回廊",m:["########","#  .   #","# $$#  #","#  @.  #","########"]},
+{n:"交错",m:["########","#@  .  #","# $$#  #","#   .  #","########"]},
+{n:"迷宫",m:["########","#@ .   #","# $$#  #","#   .  #","#      #","########"]},
+{n:"终极",m:["#########","#@   .  #","# $$ #  #","#    .  #","#########"]}
 ];
 const W=1,F=2,T=3,B=4,BT=5;
 let actx=null;
@@ -231,11 +231,11 @@ const G={
     const g=document.getElementById('lsGrid');g.innerHTML='';
     for(let i=0;i<LEVELS.length;i++){
       const b=document.createElement('button');b.className='level-btn';
-      const done=this.comp.includes(i),unlk=i===0||this.comp.includes(i-1)||done,cur=i===this.lv;
-      if(cur)b.classList.add('current');else if(done)b.classList.add('completed');else if(unlk)b.classList.add('unlocked');else b.classList.add('locked');
+      const done=this.comp.includes(i),unlk=true,cur=i===this.lv;
+      if(cur)b.classList.add('current');else if(done)b.classList.add('completed');else b.classList.add('unlocked');
       let h=''+(i+1);const bs=this.best['l'+i];if(bs)h+='<span class="best">'+bs+'步</span>';
       b.innerHTML=h;
-      if(unlk||done)(idx=>b.onclick=()=>{this.load(idx);this.hideLS()})(i);
+      (idx=>b.onclick=()=>{this.load(idx);this.hideLS()})(i);
       g.appendChild(b);
     }
     document.getElementById('lsOverlay').classList.add('show');

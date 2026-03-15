@@ -103,13 +103,6 @@ const LEVELS = [
     simpleTip: '先连按两次 ⬆ 把箱子推上去，然后 ➡ 绕过去，⬆ 走到上方，最后 ⬅ 推进目标。'
   },
   {
-    name: '上下两送', difficulty: '⭐⭐ 简单（5步·2箱）',
-    map: ['######','# .  #','# $  #','# @  #','# $  #','# .  #','######'],
-    solution: 'URDLD',
-    tutorialGoal: '上下各一个箱子和目标，分别送进去。',
-    simpleTip: '先 ⬆ 把上面箱子推进目标，然后 ➡⬇⬅ 绕到下面箱子上方，最后 ⬇ 推进下面目标。'
-  },
-  {
     name: '双箱对推', difficulty: '⭐⭐ 简单（8步·2箱）',
     map: ['#######','#     #','# .$  #','#  @  #','# .$  #','#     #','#######'],
     solution: 'RULDRDLU',
@@ -120,43 +113,50 @@ const LEVELS = [
     name: '拐角双推', difficulty: '⭐⭐⭐ 中等（22步·2箱）',
     map: ['######','#.   #','# $# #','#  $ #','# @  #','#   .#','######'],
     solution: 'UUDDRRUUULLDDRLUURRDDD',
-    tutorialGoal: '两个箱子分别在不同位置，两个目标分别在左上和右下角。需要绕路把它们送到位。',
-    simpleTip: '这关需要绕路！先把上面的箱子推到左上目标，再把下面的箱子推到右下目标。22步，跟着教程一步步来。'
+    tutorialGoal: '两个箱子分别在不同位置，目标在左上和右下角。需要反复绕路。',
+    simpleTip: '22步需要耐心！先处理上面箱子推到左上目标，再处理下面箱子推到右下。'
   },
   {
     name: '三重奏', difficulty: '⭐⭐⭐ 中等（26步·3箱）',
     map: ['#######','#     #','#.$$  #','#.  $ #','#.  @ #','#######'],
     solution: 'LULLUURDURRDLLDURRRDLLLRDL',
-    tutorialGoal: '3个箱子要推到左边3个目标点。空间大但需要规划好顺序。',
-    simpleTip: '先处理离目标最近的箱子，再处理远的。注意别把箱子推到死角！26步，耐心照着走。'
+    tutorialGoal: '3个箱子要推到左边3个目标点。需要精确规划推箱顺序。',
+    simpleTip: '26步，最容易出错的是推箱顺序。一定按教程走，别自由发挥！'
   },
   {
-    name: '三连推', difficulty: '⭐⭐⭐ 中等（16步·3箱）',
-    map: ['######','#    #','# .$.#','# $  #','# .$.#','# @  #','######'],
-    solution: 'ULUURRLLDDRURRDL',
-    tutorialGoal: '3个箱子和3个目标交错排列，需要巧妙安排推箱顺序。',
-    simpleTip: '目标点分布在箱子两侧，需要来回推。按教程走就对了！'
-  },
-  {
-    name: '四箱围城', difficulty: '⭐⭐⭐⭐ 困难（11步·3箱）',
-    map: [' #####','##   #','# .$.#','# $  #','#.$ @#','#    #','######'],
-    solution: 'UUULLDRDDLU',
-    tutorialGoal: '虽然只有11步，但每步都很关键。3个箱子在紧凑空间里，容错率很低。',
-    simpleTip: '步数少不代表简单！这关空间紧凑，一步推错就可能死局。照着教程走，别自己发挥。'
+    name: '五星上将', difficulty: '⭐⭐⭐⭐ 困难（26步·4箱）',
+    map: ['########','# ..   #','# $$   #','## # ###','#  $ . #','# @$ . #','########'],
+    solution: 'UUULURDDDRRUULRDDLLUUDDDRR',
+    tutorialGoal: '4个箱子散落在复杂地形中，需要穿过狭窄走廊逐一推到位。',
+    simpleTip: '4个箱子！复杂地形＋狭窄走廊，容错率极低。26步，严格照着走。'
   },
   {
     name: '大厅搬运', difficulty: '⭐⭐⭐⭐ 困难（22步·3箱）',
     map: ['########','#   .  #','# $## .#','#  $   #','# @$ . #','#      #','########'],
     solution: 'UULURRLDDRRRDRULLLLDRR',
-    tutorialGoal: '大地图里3个箱子散落各处，3个目标也分散在不同位置。需要全局规划。',
-    simpleTip: '地图很大但别慌。逐个处理箱子，注意中间的墙壁会挡路。22步通关。'
+    tutorialGoal: '大地图+中间有墙壁阻隔，3个箱子需要各自绕路才能到达目标。',
+    simpleTip: '地图大、墙壁多，需要全局思维。22步要绕很多路。'
   },
   {
-    name: '终极迷宫', difficulty: '⭐⭐⭐⭐⭐ 大师（30步·2箱）',
-    map: ['########','#  # . #','# $   .#','#  ##  #','# $#   #','#   @  #','########'],
-    solution: 'LLLUUURRRURRDDLUDDDLLLUULURRRR',
-    tutorialGoal: '虽然只有2个箱子，但迷宫般的墙壁让路线极其复杂。这是终极挑战！',
-    simpleTip: '2个箱子看着简单，但中间的墙壁把地图切成了迷宫。30步，每一步都要精确。这关通了你就是推箱子大师！🏆'
+    name: '走廊搬运', difficulty: '⭐⭐⭐⭐ 困难（42步·2箱）',
+    map: ['########','#      #','# $ ## #','## #.  #','#  #.$ #','# @  . #','########'],
+    solution: 'RRUURRUULLLLDDDUUURRRRDDDLURUULLLDLDDLDRRR',
+    tutorialGoal: '虽然只有2个箱子，但走廊地形极其复杂，需要大量绕路。42步！',
+    simpleTip: '42步的马拉松关卡！走廊弯弯绕绕，箱子需要推很远的路。耐心是关键。'
+  },
+  {
+    name: '四箱围攻', difficulty: '⭐⭐⭐⭐⭐ 大师（54步·3箱）',
+    map: ['########','#  .   #','#  $#. #','# $$   #','## #.  #','#  @   #','########'],
+    solution: 'LUUUDRRDRRUUULLLDLLURDDRLDDRRURRUULDRDDLLLLUURRDDRRULU',
+    tutorialGoal: '3个箱子在墙壁和走廊组成的复杂地形中，54步才能通关。',
+    simpleTip: '54步的超长关卡！箱子被墙壁包围，需要极其精确的路线规划。这关通了你就很牛了！'
+  },
+  {
+    name: '回字终极', difficulty: '⭐⭐⭐⭐⭐ 地狱（67步·4箱）',
+    map: ['########','#  ..  #','# $  $ #','## ## ##','# $  $ #','#  ..  #','#  @   #','########'],
+    solution: 'ULLURUULURDRRURRDLDDLDLLUUURRLLDDDRRURUURULDDDLLRRUULLLDDLDRURRRRDL',
+    tutorialGoal: '4个箱子＋4个目标在回字形地图中。67步的终极挑战，这是最终Boss！',
+    simpleTip: '67步！回字形地图让箱子和目标互相干扰，需要反复穿梭推送。通关了你就是推箱子之神！🏆👑'
   }
 ];
 

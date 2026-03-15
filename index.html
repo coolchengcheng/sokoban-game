@@ -37,7 +37,7 @@ canvas{display:block;border-radius:12px;background:#1b2838}
 #levelSelect.hidden{display:none}
 #levelPanel{background:#111b2f;border:1px solid #2b3a5a;border-radius:18px;padding:18px;max-width:360px;width:92vw}
 #levelPanel h2{font-size:22px;color:#ffd36e;text-align:center;margin-bottom:14px}
-#levelGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+#levelGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-height:60vh;overflow-y:auto}
 .levelBtn{background:#17253f;color:#fff;border:1px solid #314264;border-radius:12px;padding:12px;min-height:78px;text-align:left}
 .levelBtn.done{border-color:#45d483;background:#153526}.levelBtn.current{border-color:#ffd36e}
 .levelBtn b{display:block;font-size:14px;margin-bottom:5px}.levelBtn small{display:block;color:#a8b2cb;line-height:1.45}
@@ -89,53 +89,74 @@ canvas{display:block;border-radius:12px;background:#1b2838}
 <script>
 const LEVELS = [
   {
-    name: '第一推', difficulty: '⭐ 入门（2步）',
+    name: '第一推', difficulty: '⭐ 入门（2步·1箱）',
     map: ['#####','#   #','#.$ #','#  @#','#####'],
     solution: 'UL',
     tutorialGoal: '把箱子📦往左推到红色目标点🎯上。',
     simpleTip: '最简单的一关，只要 2 步！先按 ⬆ 走到箱子右边，再按 ⬅ 把箱子推进目标。'
   },
   {
-    name: '直线三推', difficulty: '⭐ 入门（5步）',
+    name: '直线三推', difficulty: '⭐ 入门（5步·1箱）',
     map: ['#####','#.  #','#   #','# $ #','# @ #','#####'],
     solution: 'UURUL',
-    tutorialGoal: '箱子在中间，目标在左上角。需要先把箱子往上顶两次，再绕到右边从右往左推。',
-    simpleTip: '先连按两次 ⬆ 把箱子推上去，然后按 ➡ 绕到箱子右边，按 ⬆ 走到箱子上方，最后按 ⬅ 推进目标。'
+    tutorialGoal: '箱子在中间，目标在左上角。需要先往上顶两次，再绕到右边从右往左推。',
+    simpleTip: '先连按两次 ⬆ 把箱子推上去，然后 ➡ 绕过去，⬆ 走到上方，最后 ⬅ 推进目标。'
   },
   {
-    name: '右推入点', difficulty: '⭐ 入门（2步）',
-    map: ['#####','#   #','# $.#','#@  #','#####'],
-    solution: 'UR',
-    tutorialGoal: '箱子右边就是目标点，走过去推一下就行。',
-    simpleTip: '按 ⬆ 站到箱子左边，再按 ➡ 推进去。2 步搞定！'
-  },
-  {
-    name: '绕路推箱', difficulty: '⭐⭐ 简单（4步）',
-    map: ['######','#    #','# $  #','# .@ #','######'],
-    solution: 'UULD',
-    tutorialGoal: '箱子在上面，目标在下面。不能直接推下去——需要绕到箱子上方，再往下推。',
-    simpleTip: '先连按两次 ⬆ 绕到箱子上方，再按 ⬅ 对准箱子正上方，最后按 ⬇ 把箱子推到目标点。'
-  },
-  {
-    name: '上下两送', difficulty: '⭐⭐ 简单（5步）',
+    name: '上下两送', difficulty: '⭐⭐ 简单（5步·2箱）',
     map: ['######','# .  #','# $  #','# @  #','# $  #','# .  #','######'],
     solution: 'URDLD',
-    tutorialGoal: '两个箱子、两个目标。上面的箱子推到上面的目标，下面的推到下面的目标。',
-    simpleTip: '先按 ⬆ 把上面箱子推进上方目标，然后绕路（➡⬇⬅）到下面箱子上方，最后按 ⬇ 推进下方目标。'
+    tutorialGoal: '上下各一个箱子和目标，分别送进去。',
+    simpleTip: '先 ⬆ 把上面箱子推进目标，然后 ➡⬇⬅ 绕到下面箱子上方，最后 ⬇ 推进下面目标。'
   },
   {
-    name: '双箱入门', difficulty: '⭐⭐⭐ 中等（8步）',
+    name: '双箱对推', difficulty: '⭐⭐ 简单（8步·2箱）',
     map: ['#######','#     #','# .$  #','#  @  #','# .$  #','#     #','#######'],
     solution: 'RULDRDLU',
-    tutorialGoal: '左右排列的两组箱子+目标。先处理上面那组，再处理下面那组。',
-    simpleTip: '先绕到上面箱子的右边（➡⬆），向左推进目标（⬅）。再绕到下面箱子右边（⬇➡⬇），向左推进目标（⬅）。照抄就行！'
+    tutorialGoal: '左右排列的两组箱子+目标，先处理上面那组再处理下面那组。',
+    simpleTip: '先 ➡⬆ 绕到上面箱子右边，⬅ 推进目标。再 ⬇➡⬇ 绕到下面箱子右边，⬅ 推进去。照抄！'
   },
   {
-    name: '双箱交叉', difficulty: '⭐⭐⭐ 中等（7步）',
-    map: ['########','#      #','# .$   #','#  @   #','#  $.  #','#      #','########'],
-    solution: 'RULDLDR',
-    tutorialGoal: '上面的箱子往左推，下面的箱子往右推，交叉送到各自的目标。',
-    simpleTip: '先绕到上面箱子右边（➡⬆），向左推（⬅）。再绕到下面箱子左边（⬇⬅⬇），向右推（➡）。7步完成！'
+    name: '拐角双推', difficulty: '⭐⭐⭐ 中等（22步·2箱）',
+    map: ['######','#.   #','# $# #','#  $ #','# @  #','#   .#','######'],
+    solution: 'UUDDRRUUULLDDRLUURRDDD',
+    tutorialGoal: '两个箱子分别在不同位置，两个目标分别在左上和右下角。需要绕路把它们送到位。',
+    simpleTip: '这关需要绕路！先把上面的箱子推到左上目标，再把下面的箱子推到右下目标。22步，跟着教程一步步来。'
+  },
+  {
+    name: '三重奏', difficulty: '⭐⭐⭐ 中等（26步·3箱）',
+    map: ['#######','#     #','#.$$  #','#.  $ #','#.  @ #','#######'],
+    solution: 'LULLUURDURRDLLDURRRDLLLRDL',
+    tutorialGoal: '3个箱子要推到左边3个目标点。空间大但需要规划好顺序。',
+    simpleTip: '先处理离目标最近的箱子，再处理远的。注意别把箱子推到死角！26步，耐心照着走。'
+  },
+  {
+    name: '三连推', difficulty: '⭐⭐⭐ 中等（16步·3箱）',
+    map: ['######','#    #','# .$.#','# $  #','# .$.#','# @  #','######'],
+    solution: 'ULUURRLLDDRURRDL',
+    tutorialGoal: '3个箱子和3个目标交错排列，需要巧妙安排推箱顺序。',
+    simpleTip: '目标点分布在箱子两侧，需要来回推。按教程走就对了！'
+  },
+  {
+    name: '四箱围城', difficulty: '⭐⭐⭐⭐ 困难（11步·3箱）',
+    map: [' #####','##   #','# .$.#','# $  #','#.$ @#','#    #','######'],
+    solution: 'UUULLDRDDLU',
+    tutorialGoal: '虽然只有11步，但每步都很关键。3个箱子在紧凑空间里，容错率很低。',
+    simpleTip: '步数少不代表简单！这关空间紧凑，一步推错就可能死局。照着教程走，别自己发挥。'
+  },
+  {
+    name: '大厅搬运', difficulty: '⭐⭐⭐⭐ 困难（22步·3箱）',
+    map: ['########','#   .  #','# $## .#','#  $   #','# @$ . #','#      #','########'],
+    solution: 'UULURRLDDRRRDRULLLLDRR',
+    tutorialGoal: '大地图里3个箱子散落各处，3个目标也分散在不同位置。需要全局规划。',
+    simpleTip: '地图很大但别慌。逐个处理箱子，注意中间的墙壁会挡路。22步通关。'
+  },
+  {
+    name: '终极迷宫', difficulty: '⭐⭐⭐⭐⭐ 大师（30步·2箱）',
+    map: ['########','#  # . #','# $   .#','#  ##  #','# $#   #','#   @  #','########'],
+    solution: 'LLLUUURRRURRDDLUDDDLLLUULURRRR',
+    tutorialGoal: '虽然只有2个箱子，但迷宫般的墙壁让路线极其复杂。这是终极挑战！',
+    simpleTip: '2个箱子看着简单，但中间的墙壁把地图切成了迷宫。30步，每一步都要精确。这关通了你就是推箱子大师！🏆'
   }
 ];
 

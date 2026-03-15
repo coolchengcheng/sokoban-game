@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>推箱子 Sokoban</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);min-height:100vh;display:flex;flex-direction:column;align-items:center;color:#e0e0e0;overflow-x:hidden;touch-action:none}
+h1{margin-top:12px;font-size:26px;background:linear-gradient(90deg,#e94560,#ffbd69);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#info-bar{display:flex;gap:20px;margin:8px 0;font-size:15px;color:#aaa}
+#info-bar span{font-weight:bold;color:#ffbd69}
+#controls{display:flex;gap:8px;margin:6px 0;flex-wrap:wrap;justify-content:center}
+button{padding:7px 14px;border:none;border-radius:8px;font-size:13px;cursor:pointer;transition:all .2s;font-weight:600}
+button:active{transform:scale(.95)}
+.btn-undo{background:#e94560;color:#fff}.btn-undo:hover{background:#d63a55}
+.btn-reset{background:#533483;color:#fff}.btn-reset:hover{background:#6b44a8}
+.btn-level{background:#0f3460;color:#ffbd69;border:1px solid #ffbd69}.btn-level:hover{background:#1a4a7a}
+.btn-prev,.btn-next{background:#16213e;color:#e94560;border:1px solid #e94560}.btn-prev:hover,.btn-next:hover{background:#1d2d4f}
+.btn-tutorial{background:#2a6041;color:#2ecc71;border:1px solid #2ecc71}.btn-tutorial:hover{background:#35784f}.btn-tutorial.active{background:#2ecc71;color:#1a1a2e}
+#game-area{display:flex;gap:16px;align-items:flex-start;margin:6px 0;flex-wrap:wrap;justify-content:center}
+#game-container{position:relative}
+canvas{border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+#tutorial-panel{width:280px;background:rgba(22,33,62,.95);border:1px solid #333;border-radius:12px;padding:16px;box-shadow:0 4px 24px rgba(0,0,0,.4);max-height:460px;overflow-y:auto}
+#tutorial-panel.hidden{display:none}
+#tutorial-panel h3{font-size:16px;color:#ffbd69;margin-bottom:10px}
+.tip-section{margin-bottom:12px}
+.tip-label{font-size:12px;color:#e94560;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.tip-text{font-size:13px;color:#ccc;line-height:1.6}
+.step-list{list-style:none;padding:0}
+.step-list li{font-size:13px;color:#bbb;padding:4px 0 4px 20px;position:relative;line-height:1.5}
+.step-list li::before{content:attr(data-step);position:absolute;left:0;color:#ffbd69;font-weight:bold;font-size:12px}
+.hint-box{background:rgba(233,69,96,.1);border-left:3px solid #e94560;padding:8px 10px;border-radius:0 6px 6px 0;margin-top:8px}
+.hint-box p{font-size:12px;color:#e94560;line-height:1.5}
+@media(max-width:700px){#tutorial-panel{width:90vw;max-width:360px;max-height:200px}#game-area{flex-direction:column;align-items:center}}
+#level-select{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100}
+#level-select.hidden{display:none}
+#level-select h2{font-size:26px;margin-bottom:20px;color:#ffbd69}
+#level-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:300px}
+.level-btn{width:80px;height:80px;border-radius:12px;font-size:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#16213e;color:#e0e0e0;border:2px solid #333;cursor:pointer;transition:all .2s}
+.level-btn:hover{border-color:#e94560;transform:scale(1.05)}
+.level-btn.completed{border-color:#2ecc71;background:#1a3a2e}
+.level-btn.current{border-color:#ffbd69;background:#2a2040}
+.level-btn small{font-size:11px;color:#888;margin-top:4px}
+#win-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200}
+#win-overlay.hidden{display:none}
+#win-overlay h2{font-size:32px;color:#2ecc71;margin-bottom:8px}
+#win-overlay p{font-size:18px;color:#ccc;margin-bottom:20px}
+#win-overlay button{padding:12px 30px;font-size:16px}
+#mobile-dpad{display:none;margin:8px 0 16px}
+@media(max-width:600px){#mobile-dpad{display:grid}}
+#mobile-dpad{grid-template-columns:60px 60px 60px;grid-template-rows:60px 60px 60px;gap:4px}
+.dpad-btn{width:60px;height:60px;border-radius:10px;border:none;font-size:24px;background:rgba(255,255,255,.1);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.dpad-btn:active{background:rgba(255,255,255,.25)}
+.dpad-up{grid-column:2;grid-row:1}.dpad-left{grid-column:1;grid-row:2}
+.dpad-center{grid-column:2;grid-row:2;background:transparent}
+.dpad-right{grid-column:3;grid-row:2}.dpad-down{grid-column:2;grid-row:3}
+#footer{margin:6px 0 12px;font-size:12px;color:#555}
+</style>
+</head>
+<body>
+<h1>🎮 推箱子 Sokoban</h1>
+<div id="info-bar">关卡 <span id="lv-num">1</span> &nbsp;|&nbsp; 步数 <span id="steps">0</span></div>
+<div id="controls">
+  <button class="btn-undo" onclick="undo()">↩ 撤销(Z)</button>
+  <button class="btn-reset" onclick="resetLevel()">🔄 重置(R)</button>
+  <button class="btn-prev" onclick="prevLevel()">◀ 上一关</button>
+  <button class="btn-next" onclick="nextLevel()">下一关 ▶</button>
+  <button class="btn-level" onclick="showLevelSelect()">📋 选关</button>
+  <button class="btn-tutorial" id="btn-tut" onclick="toggleTutorial()">📖 教程(T)</button>
+</div>
+<div id="game-area">
+  <div id="game-container"><canvas id="canvas"></canvas></div>
+  <div id="tutorial-panel" class="hidden">
+    <h3 id="tut-title"></h3>
+    <div id="tut-content"></div>
+  </div>
+</div>
+<div id="mobile-dpad">
+  <button class="dpad-btn dpad-up" onclick="move(0,-1)">⬆</button>
+  <button class="dpad-btn dpad-left" onclick="move(-1,0)">⬅</button>
+  <div class="dpad-center"></div>
+  <button class="dpad-btn dpad-right" onclick="move(1,0)">➡</button>
+  <button class="dpad-btn dpad-down" onclick="move(0,1)">⬇</button>
+</div>
+<div id="footer">方向键/WASD 移动 · Z 撤销 · R 重置 · T 教程</div>
+<div id="level-select" class="hidden">
+  <h2>🏆 选择关卡</h2>
+  <div id="level-grid"></div>
+  <button class="btn-reset" style="margin-top:20px" onclick="hideLevelSelect()">返回</button>
+</div>
+<div id="win-overlay" class="hidden">
+  <h2>🎉 恭喜通关！</h2>
+  <p id="win-msg"></p>
+  <div style="display:flex;gap:10px">
+    <button class="btn-reset" onclick="resetLevel();hideWin()">重玩本关</button>
+    <button class="btn-undo" id="btn-next-lv" onclick="nextLevel();hideWin()">下一关 ▶</button>
+  </div>
+</div>
+<script>
+const LEVELS=[
+{name:"初识推箱",map:["  ####  ","  #. #  ","  #$ #  ","###  ###","#  $.  #","#  @#  #","########"],tutorial:{difficulty:"⭐ 入门",goal:"把 2 个箱子分别推到红色目标点上。",concepts:["基本移动：用方向键/WASD控制角色","推箱子：走到箱子旁边，往箱子方向移动即可推动","箱子到位后会变绿并显示 ✓"],steps:["先向上走，把上方的箱子推到顶部的目标点","然后回到下方，把左边的箱子向右推到目标点"],tips:"推箱子只能推不能拉！推错了随时按 Z 撤销。"}},
+{name:"两个箱子",map:[" #####  "," # . ## "," # $  # ","## #$ # ","#  .@ # ","#     # ","####### "],tutorial:{difficulty:"⭐ 入门",goal:"把 2 个箱子推到目标点，注意墙壁的阻挡。",concepts:["观察地形：推之前先想好路线","墙角陷阱：箱子推到墙角就取不出来了","先推远处的箱子，再推近处的"],steps:["先向上走，绕到上方箱子的左边","把上方箱子向右推到目标点","再去处理下方的箱子，向左推到目标点"],tips:"注意不要把箱子推到左下角的墙角里，否则就卡住了！"}},
+{name:"L型走廊",map:["  ######","  #  . #","### $# #","#  $.  #","# .$ ###","# @# #  ","####    "],tutorial:{difficulty:"⭐⭐ 进阶",goal:"3 个箱子、3 个目标点，L型地形增加了复杂度。",concepts:["路径规划：L型走廊限制了移动方向","推箱顺序很重要：错误的顺序会导致箱子卡住","善用撤销：多试几种顺序"],steps:["先观察三个目标点的位置","从最内侧（最难到达）的目标点开始处理","注意中间的墙壁会影响推箱路线","最后处理外侧的箱子"],tips:"这关的关键是顺序——先搞定里面的，再搞外面的。推错了别怕，Z 键是你的好朋友！"}},
+{name:"四方阵",map:[" ###### "," # .. # "," # ## # ","##$  $##","#  ##  #","# $  $ #","#  ..@ #","########"],tutorial:{difficulty:"⭐⭐ 进阶",goal:"4 个箱子、4 个目标点，对称地形但不要被迷惑！",concepts:["对称不代表简单：虽然地形对称，但推箱路线不对称","中间墙壁的利用：利用墙壁来定位箱子","避免死局：多个箱子时更容易互相堵住"],steps:["先处理下方的两个箱子","将它们推到下方的两个目标点","再处理上方的两个箱子","注意不要让箱子挡住通道"],tips:"上方和下方各有两个目标点。先把近处的箱子推到位，给远处的箱子留出通道。"}},
+{name:"仓库迷宫",map:["  #######","###  .  #","# $ # . #","# #  $# #","#  $ #  #","##$#.  ##"," #  .@# "," ######  "],tutorial:{difficulty:"⭐⭐⭐ 挑战",goal:"4 个箱子散布在迷宫中，空间狭窄，容错率低。",concepts:["迷宫导航：空间有限，需要精确规划每一步","箱子之间会互相影响：推一个可能挡住另一个的路","全局思维：开始前先规划好所有箱子的最终位置"],steps:["观察地形，找出每个箱子应该去哪个目标点","优先处理空间最受限的箱子","每推一个箱子前，确认不会堵住其他箱子的路径","善用撤销反复尝试"],tips:"这关容错率很低。建议先在脑中规划好每个箱子对应哪个目标点，再动手。随时 Z 撤销！"}},
+{name:"交叉路",map:[" ########"," #  #   #","## .$$. #","# $  $  #","# . @. ##","# $  $ # ","##.  .## "," # ## #  "," #    #  "," ######  "],tutorial:{difficulty:"⭐⭐⭐ 挑战",goal:"6 个箱子 + 6 个目标点，交叉路口的博弈。",concepts:["多箱子协调：6个箱子互相影响，需要全局统筹","交叉路口：多条路径交汇，选择推箱方向很关键","分区思维：把地图分成几个区域分别处理"],steps:["先把地图分成上、中、下三个区域","从外围开始，先处理边缘的箱子","中间区域留到最后，因为它是通道枢纽","每完成一个区域，确认不影响其他区域的可达性"],tips:"6个箱子很容易互相堵住。核心策略：保持中间通道畅通，从外围往里推。"}},
+{name:"终极挑战",map:["  ########","  #  #   #","### $  $ #","# .$ #$  #","# .  . # #","# .#.$ $ #","#  # . ###","##   @#   "," ######   "],tutorial:{difficulty:"⭐⭐⭐⭐ 大师",goal:"6 个箱子 + 6 个目标点，紧凑空间的终极考验。",concepts:["精确操作：每一步都可能决定成败","死角识别：多个墙角和死角，箱子一旦推入就无法挽回","逆向思维：从目标点倒推，想想箱子应该从哪个方向来"],steps:["先花时间观察整体布局","识别哪些位置是「死角」——箱子推进去就出不来","从最难到达的目标点开始倒推","为每个箱子规划专属路线，避免冲突","耐心尝试，善用撤销"],tips:"这是最后一关，没有捷径。唯一的建议：耐心 + 撤销。每推一步想三步，就像下棋一样。加油！🏆"}}
+];
+
+const TILE={FLOOR:0,WALL:1,GOAL:2,BOX:3,BOX_ON_GOAL:4,PLAYER:5,PLAYER_ON_GOAL:6};
+const COLORS={bg:'#1b2838',wall:'#4a4a6a',wallTop:'#5a5a7a',floor:'#2a2a3e',goal:'#e94560',box:'#c9a227',boxDone:'#2ecc71',player:'#3498db',playerEye:'#fff'};
+
+let currentLevel=0,grid=[],rows=0,cols=0;
+let playerX=0,playerY=0,stepCount=0;
+let history_stack=[],completed=new Set(),cellSize=48;
+let tutorialVisible=false;
+
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+
+function toggleTutorial(){
+  tutorialVisible=!tutorialVisible;
+  const panel=document.getElementById('tutorial-panel');
+  const btn=document.getElementById('btn-tut');
+  if(tutorialVisible){panel.classList.remove('hidden');btn.classList.add('active');renderTutorial()}
+  else{panel.classList.add('hidden');btn.classList.remove('active')}
+}
+
+function renderTutorial(){
+  const lv=LEVELS[currentLevel];
+  const t=lv.tutorial;
+  document.getElementById('tut-title').textContent='📖 第'+(currentLevel+1)+'关 · '+lv.name;
+  let h='';
+  h+='<div class="tip-section"><div class="tip-label">难度</div><div class="tip-text">'+t.difficulty+'</div></div>';
+  h+='<div class="tip-section"><div class="tip-label">🎯 目标</div><div class="tip-text">'+t.goal+'</div></div>';
+  h+='<div class="tip-section"><div class="tip-label">💡 核心概念</div><ul class="step-list">';
+  t.concepts.forEach(function(c){h+='<li data-step="·">'+c+'</li>'});
+  h+='</ul></div>';
+  h+='<div class="tip-section"><div class="tip-label">🗺️ 攻略思路</div><ul class="step-list">';
+  t.steps.forEach(function(s,i){h+='<li data-step="'+(i+1)+'.">'+s+'</li>'});
+  h+='</ul></div>';
+  h+='<div class="hint-box"><p>💬 '+t.tips+'</p></div>';
+  document.getElementById('tut-content').innerHTML=h;
+}
+
+function parseLevel(idx){
+  const level=LEVELS[idx];
+  const map=level.map;
+  rows=map.length;
+  cols=Math.max(...map.map(function(r){return r.length}));
+  grid=[];
+  for(let y=0;y<rows;y++){
+    grid[y]=[];
+    for(let x=0;x<cols;x++){
+      const ch=(map[y]||'')[x]||' ';
+      switch(ch){
+        case'#':grid[y][x]=TILE.WALL;break;
+        case'.':grid[y][x]=TILE.GOAL;break;
+        case'@':grid[y][x]=TILE.PLAYER;playerX=x;playerY=y;break;
+        case'+':grid[y][x]=TILE.PLAYER_ON_GOAL;playerX=x;playerY=y;break;
+        case'$':grid[y][x]=TILE.BOX;break;
+        case'*':grid[y][x]=TILE.BOX_ON_GOAL;break;
+        default:grid[y][x]=TILE.FLOOR;break;
+      }
+    }
+  }
+  stepCount=0;history_stack=[];updateInfo();
+  if(tutorialVisible)renderTutorial();
+}
+
+function calcCellSize(){
+  const sw=tutorialVisible?296:0;
+  const maxW=Math.min(window.innerWidth-32-sw,560);
+  const maxH=Math.min(window.innerHeight-260,480);
+  cellSize=Math.floor(Math.min(maxW/cols,maxH/rows));
+  cellSize=Math.max(cellSize,24);cellSize=Math.min(cellSize,64);
+}
+
+function roundRect(c,x,y,w,h,r){
+  c.beginPath();c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);
+  c.lineTo(x+w,y+h-r);c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);c.lineTo(x+r,y+h);
+  c.quadraticCurveTo(x,y+h,x,y+h-r);c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);c.closePath();
+}
+
+function draw(){
+  calcCellSize();
+  canvas.width=cols*cellSize;canvas.height=rows*cellSize;
+  ctx.fillStyle=COLORS.bg;ctx.fillRect(0,0,canvas.width,canvas.height);
+  for(let y=0;y<rows;y++){
+    for(let x=0;x<cols;x++){
+      const t=grid[y][x],px=x*cellSize,py=y*cellSize,s=cellSize,p=2;
+      if(t===TILE.FLOOR)continue;
+      if(t===TILE.WALL){
+        ctx.fillStyle=COLORS.wall;ctx.fillRect(px,py,s,s);
+        ctx.fillStyle=COLORS.wallTop;ctx.fillRect(px+1,py+1,s-2,s*.4);
+        ctx.strokeStyle='#3a3a5a';ctx.strokeRect(px+.5,py+.5,s-1,s-1);continue;
+      }
+      ctx.fillStyle=COLORS.floor;ctx.fillRect(px,py,s,s);
+      if(t===TILE.GOAL||t===TILE.PLAYER_ON_GOAL){
+        ctx.fillStyle=COLORS.goal;ctx.globalAlpha=.4;ctx.beginPath();
+        ctx.arc(px+s/2,py+s/2,s*.2,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+        ctx.strokeStyle=COLORS.goal;ctx.lineWidth=2;ctx.beginPath();
+        ctx.moveTo(px+s*.35,py+s/2);ctx.lineTo(px+s*.65,py+s/2);
+        ctx.moveTo(px+s/2,py+s*.35);ctx.lineTo(px+s/2,py+s*.65);ctx.stroke();
+      }
+      if(t===TILE.BOX||t===TILE.BOX_ON_GOAL){
+        const done=t===TILE.BOX_ON_GOAL,c=done?COLORS.boxDone:COLORS.box;
+        ctx.fillStyle='rgba(0,0,0,0.3)';roundRect(ctx,px+p+3,py+p+3,s-p*2,s-p*2,6);ctx.fill();
+        ctx.fillStyle=c;roundRect(ctx,px+p,py+p,s-p*2,s-p*2,6);ctx.fill();
+        ctx.strokeStyle=done?'#27ae60':'#b8941f';ctx.lineWidth=1.5;
+        ctx.strokeRect(px+p+4,py+p+4,s-p*2-8,s-p*2-8);
+        ctx.beginPath();ctx.moveTo(px+p+4,py+p+4);ctx.lineTo(px+s-p-4,py+s-p-4);
+        ctx.moveTo(px+s-p-4,py+p+4);ctx.lineTo(px+p+4,py+s-p-4);ctx.stroke();
+        if(done){ctx.fillStyle='#fff';ctx.font=s*.35+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('✓',px+s/2,py+s/2)}
+      }
+      if(t===TILE.PLAYER||t===TILE.PLAYER_ON_GOAL){
+        ctx.fillStyle='rgba(0,0,0,0.3)';ctx.beginPath();ctx.arc(px+s/2+2,py+s/2+2,s*.35,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle=COLORS.player;ctx.beginPath();ctx.arc(px+s/2,py+s/2,s*.35,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='rgba(255,255,255,0.3)';ctx.beginPath();ctx.arc(px+s/2-s*.08,py+s/2-s*.1,s*.22,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle=COLORS.playerEye;ctx.beginPath();ctx.arc(px+s*.4,py+s*.42,s*.06,0,Math.PI*2);ctx.arc(px+s*.6,py+s*.42,s*.06,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle=COLORS.playerEye;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px+s/2,py+s*.52,s*.1,.1*Math.PI,.9*Math.PI);ctx.stroke();
+      }
+    }
+  }
+}
+
+function move(dx,dy){
+  const nx=playerX+dx,ny=playerY+dy;
+  if(ny<0||ny>=rows||nx<0||nx>=cols)return;
+  const target=grid[ny][nx];
+  if(target===TILE.WALL)return;
+  const snap={grid:grid.map(function(r){return r.slice()}),px:playerX,py:playerY,steps:stepCount};
+  if(target===TILE.BOX||target===TILE.BOX_ON_GOAL){
+    const bx=nx+dx,by=ny+dy;
+    if(by<0||by>=rows||bx<0||bx>=cols)return;
+    const behind=grid[by][bx];
+    if(behind===TILE.WALL||behind===TILE.BOX||behind===TILE.BOX_ON_GOAL)return;
+    grid[by][bx]=(behind===TILE.GOAL)?TILE.BOX_ON_GOAL:TILE.BOX;
+    grid[ny][nx]=(target===TILE.BOX_ON_GOAL)?TILE.GOAL:TILE.FLOOR;
+  }
+  const cur=grid[playerY][playerX];
+  grid[playerY][playerX]=(cur===TILE.PLAYER_ON_GOAL)?TILE.GOAL:TILE.FLOOR;
+  const dest=grid[ny][nx];
+  grid[ny][nx]=(dest===TILE.GOAL)?TILE.PLAYER_ON_GOAL:TILE.PLAYER;
+  playerX=nx;playerY=ny;stepCount++;
+  history_stack.push(snap);updateInfo();draw();checkWin();
+}
+
+function undo(){
+  if(history_stack.length===0)return;
+  const snap=history_stack.pop();
+  grid=snap.grid;playerX=snap.px;playerY=snap.py;stepCount=snap.steps;
+  updateInfo();draw();
+}
+
+function resetLevel(){parseLevel(currentLevel);draw()}
+
+function checkWin(){
+  for(let y=0;y<rows;y++)for(let x=0;x<cols;x++)if(grid[y][x]===TILE.BOX)return;
+  completed.add(currentLevel);saveProgress();
+  const isLast=currentLevel>=LEVELS.length-1;
+  document.getElementById('win-msg').textContent='用了 '+stepCount+' 步完成「'+LEVELS[currentLevel].name+'」！';
+  document.getElementById('btn-next-lv').style.display=isLast?'none':'';
+  document.getElementById('win-overlay').classList.remove('hidden');
+}
+
+function hideWin(){document.getElementById('win-overlay').classList.add('hidden')}
+function updateInfo(){
+  document.getElementById('lv-num').textContent=(currentLevel+1)+'/'+LEVELS.length;
+  document.getElementById('steps').textContent=stepCount;
+}
+
+function loadLevel(idx){
+  if(idx<0||idx>=LEVELS.length)return;
+  currentLevel=idx;parseLevel(idx);draw();hideLevelSelect();hideWin();
+}
+function nextLevel(){loadLevel(currentLevel+1)}
+function prevLevel(){loadLevel(currentLevel-1)}
+
+function showLevelSelect(){
+  const g=document.getElementById('level-grid');g.innerHTML='';
+  LEVELS.forEach(function(lv,i){
+    const btn=document.createElement('button');btn.className='level-btn';
+    if(completed.has(i))btn.classList.add('completed');
+    if(i===currentLevel)btn.classList.add('current');
+    btn.innerHTML=''+(i+1)+'<small>'+lv.name+'</small>';
+    btn.onclick=function(){loadLevel(i)};g.appendChild(btn);
+  });
+  document.getElementById('level-select').classList.remove('hidden');
+}
+function hideLevelSelect(){document.getElementById('level-select').classList.add('hidden')}
+
+function saveProgress(){try{localStorage.setItem('sokoban_completed',JSON.stringify([...completed]))}catch(e){}}
+function loadProgress(){try{const d=JSON.parse(localStorage.getItem('sokoban_completed')||'[]');completed=new Set(d)}catch(e){completed=new Set()}}
+
+document.addEventListener('keydown',function(e){
+  switch(e.key){
+    case'ArrowUp':case'w':case'W':e.preventDefault();move(0,-1);break;
+    case'ArrowDown':case's':case'S':e.preventDefault();move(0,1);break;
+    case'ArrowLeft':case'a':case'A':e.preventDefault();move(-1,0);break;
+    case'ArrowRight':case'd':case'D':e.preventDefault();move(1,0);break;
+    case'z':case'Z':undo();break;
+    case'r':case'R':resetLevel();break;
+    case't':case'T':toggleTutorial();break;
+    case'Escape':hideLevelSelect();hideWin();break;
+  }
+});
+
+let touchStartX=0,touchStartY=0;
+canvas.addEventListener('touchstart',function(e){const t=e.touches[0];touchStartX=t.clientX;touchStartY=t.clientY;e.preventDefault()},{passive:false});
+canvas.addEventListener('touchend',function(e){const t=e.changedTouches[0];const dx=t.clientX-touchStartX;const dy=t.clientY-touchStartY;const ax=Math.abs(dx),ay=Math.abs(dy);if(Math.max(ax,ay)<20)return;if(ax>ay){move(dx>0?1:-1,0)}else{move(0,dy>0?1:-1)}e.preventDefault()},{passive:false});
+
+window.addEventListener('resize',draw);
+loadProgress();loadLevel(0);
+</script>
+</body>
+</html>
